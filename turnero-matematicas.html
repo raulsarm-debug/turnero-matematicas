@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turnero · NICO ALGEBRAICO</title>
+<style>
+  :root{
+    --brand:#0d6e6e;          /* teal oscuro */
+    --brand-600:#0a5757;
+    --brand-100:#d9f2f0;
+    --ink:#1f2937;
+    --ink-soft:#6b7280;
+    --line:#e5e7eb;
+    --bg:#f6f8f9;
+    --card:#ffffff;
+    --ok:#16a34a;
+    --ok-bg:#e7f6ec;
+    --warn:#d97706;
+    --warn-bg:#fdf3e3;
+    --full:#dc2626;
+    --full-bg:#fdecec;
+    --lock:#6b7280;
+    --lock-bg:#eef0f2;
+    --radius:14px;
+    --shadow:0 1px 3px rgba(16,24,40,.08),0 4px 16px rgba(16,24,40,.06);
+    font-size:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit}
+
+  /* ---------- Header ---------- */
+  .topbar{
+    background:#fff;border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:40;
+  }
+  .topbar-inner{
+    max-width:1180px;margin:0 auto;padding:14px 20px;
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  }
+  .logo{
+    width:42px;height:42px;border-radius:12px;flex:0 0 auto;
+    background:linear-gradient(135deg,var(--brand),#0a9e8e);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:20px;
+  }
+  .brand h1{margin:0;font-size:19px;line-height:1.15;font-weight:800}
+  .brand p{margin:2px 0 0;font-size:12.5px;color:var(--ink-soft)}
+
+  .view-switch{
+    margin-left:auto;display:flex;background:#eef0f2;border-radius:999px;padding:4px;gap:4px;
+  }
+  .view-switch button{
+    border:0;background:transparent;padding:8px 16px;border-radius:999px;
+    font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
+    transition:all .15s ease;
+  }
+  .view-switch button.active{background:#fff;color:var(--brand);box-shadow:var(--shadow)}
+  .view-switch button.locked-badge::after{content:" 🔒";font-size:11px}
+
+  /* ---------- Barra semanal ---------- */
+  .weekbar{
+    max-width:1180px;margin:18px auto 0;padding:0 20px;
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .weekbar .nav-btn{
+    width:38px;height:38px;border-radius:10px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;font-size:17px;color:var(--ink);
+    display:flex;align-items:center;justify-content:center;transition:.12s;
+  }
+  .weekbar .nav-btn:hover:not(:disabled){border-color:var(--brand);color:var(--brand)}
+  .weekbar .nav-btn:disabled{opacity:.4;cursor:default}
+  .week-label{font-weight:700;font-size:15px;min-width:210px}
+  .btn-today{
+    border:1px solid var(--line);background:#fff;border-radius:10px;
+    padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink-soft);
+  }
+  .btn-today:hover{border-color:var(--brand);color:var(--brand)}
+  .week-tools{margin-left:auto;display:flex;gap:10px}
+
+  .btn{
+    border:0;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:600;
+    cursor:pointer;transition:.12s;display:inline-flex;align-items:center;gap:7px;
+  }
+  .btn.primary{background:var(--brand);color:#fff}
+  .btn.primary:hover{background:var(--brand-600)}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn.ghost:hover{border-color:var(--brand);color:var(--brand)}
+  .btn.danger{background:#fff;border:1px solid #fecaca;color:var(--full)}
+  .btn.danger:hover{background:var(--full-bg)}
+  .btn.sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
+  .btn:disabled{opacity:.5;cursor:default}
+
+  /* ---------- Leyenda ---------- */
+  .legend{
+    max-width:1180px;margin:12px auto 0;padding:0 20px;
+    display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);
+  }
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  /* ---------- Stats (admin) ---------- */
+  .stats{
+    max-width:1180px;margin:14px auto 0;padding:0 20px;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;
+  }
+  .stat-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;box-shadow:var(--shadow);
+  }
+  .stat-card .v{font-size:22px;font-weight:800}
+  .stat-card .k{font-size:12px;color:var(--ink-soft);margin-top:2px}
+
+  /* ---------- Grilla ---------- */
+  .grid-wrap{max-width:1180px;margin:14px auto 60px;padding:0 20px;overflow-x:auto}
+  .grid{
+    display:grid;gap:8px;min-width:760px;
+    grid-template-columns:64px repeat(5,1fr);
+  }
+  .g-head{
+    background:transparent;border-radius:10px;padding:8px 6px;text-align:center;
+    font-size:13px;font-weight:700;color:var(--ink);
+  }
+  .g-head .dnum{font-size:17px;display:block}
+  .g-head.today{background:var(--brand-100);color:var(--brand-600)}
+  .g-time{
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;color:var(--ink-soft);
+  }
+  .g-time small{display:block;font-size:10px;font-weight:500}
+  .cell{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    min-height:84px;padding:10px;display:flex;flex-direction:column;gap:6px;
+    cursor:pointer;transition:.12s;position:relative;text-align:left;
+  }
+  .cell:hover{border-color:var(--brand);box-shadow:var(--shadow);transform:translateY(-1px)}
+  .cell .occ{font-size:14px;font-weight:800}
+  .cell .tag{
+    font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;align-self:flex-start;
+  }
+  .cell .seats-bar{height:6px;border-radius:99px;background:#eef0f2;overflow:hidden;margin-top:auto}
+  .cell .seats-bar i{display:block;height:100%;border-radius:99px;background:var(--brand)}
+  .cell.s-open  .tag{background:var(--ok-bg);color:var(--ok)}
+  .cell.s-few   .tag{background:var(--warn-bg);color:var(--warn)}
+  .cell.s-few   .seats-bar i{background:var(--warn)}
+  .cell.s-full  .tag{background:var(--full-bg);color:var(--full)}
+  .cell.s-full  .seats-bar i{background:var(--full)}
+  .cell.s-full, .cell.s-past, .cell.s-blocked {cursor:default}
+  .cell.s-full:hover, .cell.s-past:hover, .cell.s-blocked:hover{transform:none;border-color:var(--line);box-shadow:none}
+  .cell.s-past{opacity:.55;background:#fafafa}
+  .cell.s-past .tag{background:var(--lock-bg);color:var(--lock)}
+  .cell.s-past .seats-bar i{background:#c6cbd1}
+  .cell.s-blocked{background:repeating-linear-gradient(45deg,#f4f5f6,#f4f5f6 8px,#ecedee 8px,#ecedee 16px)}
+  .cell.s-blocked .tag{background:var(--lock-bg);color:var(--lock)}
+  .cell .lock-input{
+    font-size:11px;border:1px solid var(--line);border-radius:8px;padding:4px 8px;width:100%;
+  }
+  .break-row{
+    grid-column:1 / -1;text-align:center;font-size:12.5px;color:var(--ink-soft);
+    padding:6px 0;font-weight:600;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);
+  }
+  .corner{background:transparent}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:90;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+    opacity:0;pointer-events:none;transition:opacity .18s ease;
+  }
+  .overlay.show{opacity:1;pointer-events:auto}
+  .modal{
+    background:#fff;border-radius:18px;max-width:520px;width:100%;
+    max-height:88vh;overflow-y:auto;padding:24px;
+    transform:translateY(10px);transition:transform .18s ease;box-shadow:0 24px 60px rgba(0,0,0,.25);
+  }
+  .overlay.show .modal{transform:translateY(0)}
+  .modal h2{margin:0 0 4px;font-size:18px}
+  .modal .sub{margin:0 0 16px;font-size:13px;color:var(--ink-soft)}
+  .modal .field{margin-bottom:12px}
+  .modal label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px;color:var(--ink)}
+  .modal input[type=text],.modal input[type=tel],.modal input[type=password]{
+    width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;
+    font-family:inherit;background:#fbfcfd;
+  }
+  .modal input:focus{outline:2px solid var(--brand-100);border-color:var(--brand);background:#fff}
+  .modal-actions{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
+  .modal-close{
+    position:sticky;top:0;float:right;margin:-6px -6px 8px 8px;
+    width:32px;height:32px;border-radius:999px;border:1px solid var(--line);
+    background:#fff;cursor:pointer;font-size:15px;color:var(--ink-soft);
+  }
+  .bigint{
+    font-size:26px;font-weight:800;letter-spacing:3px;text-align:center;
+    background:var(--brand-100);color:var(--brand-600);border-radius:12px;
+    padding:14px;margin:6px 0 14px;user-select:all;
+  }
+  .hint-box{
+    background:#f8fafc;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:12.5px;color:var(--ink-soft);margin-top:12px;line-height:1.5;
+  }
+
+  /* lista de asientos (admin) */
+  .seat-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .seat-list li{
+    display:flex;align-items:center;gap:10px;border:1px solid var(--line);
+    border-radius:10px;padding:9px 12px;background:#fbfcfd;
+  }
+  .seat-list li.empty{border-style:dashed;color:#b3b8bf;background:transparent;justify-content:center;font-size:12.5px}
+  .seat-list .who{flex:1;min-width:0}
+  .seat-list .who b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .seat-list .who small{font-size:11.5px;color:var(--ink-soft);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .seat-num{
+    width:26px;height:26px;border-radius:8px;background:var(--brand-100);color:var(--brand-600);
+    font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  }
+
+  /* ---------- Toast ---------- */
+  #toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-size:13.5px;
+    opacity:0;pointer-events:none;transition:.25s;z-index:200;max-width:90vw;text-align:center;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .locked-screen{
+    max-width:420px;margin:60px auto;background:#fff;border:1px solid var(--line);
+    border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);text-align:center;
+  }
+  .locked-screen .big-lock{font-size:38px;margin-bottom:8px}
+
+  @media (max-width:720px){
+    .modal{padding:18px}
+    .week-label{min-width:0}
+    .view-switch{margin-left:0}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="logo" id="logoBox">π</div>
+    <div class="brand">
+      <h1 id="brandName">NICO ALGEBRAICO</h1>
+      <p>Turnos de 1 hora · hasta 8 alumnos por turno</p>
+    </div>
+    <div class="view-switch">
+      <button id="btnViewStudent" class="active">📅 Reservar</button>
+      <button id="btnViewAdmin" class="locked-badge">👨‍🏫 Panel del profesor</button>
+    </div>
+  </div>
+</header>
+
+<div class="weekbar">
+  <button class="nav-btn" id="btnPrev" title="Semana anterior">‹</button>
+  <div class="week-label" id="weekLabel">—</div>
+  <button class="nav-btn" id="btnNext" title="Semana siguiente">›</button>
+  <button class="btn-today" id="btnToday">Hoy</button>
+  <div class="week-tools" id="weekTools"></div>
+</div>
+
+<div class="legend" id="legend">
+  <span><i class="dot" style="background:var(--ok)"></i> Disponible</span>
+  <span><i class="dot" style="background:var(--warn)"></i> Últimos lugares</span>
+  <span><i class="dot" style="background:var(--full)"></i> Completo</span>
+  <span><i class="dot" style="background:#c6cbd1"></i> Pasado / Bloqueado</span>
+</div>
+
+<div class="stats" id="stats" style="display:none"></div>
+
+<div class="grid-wrap"><div class="grid" id="grid"></div></div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   CONFIGURACIÓN
+========================================================= */
+const CONFIG = {
+  slots: [
+    {h:9,  label:"09:00"},{h:10, label:"10:00"},
+    {h:11, label:"11:00"},{h:12, label:"12:00"},
+    // pausa 13:00–17:00
+    {h:17, label:"17:00"},{h:18, label:"18:00"},
+    {h:19, label:"19:00"},{h:20, label:"20:00"}
+  ],
+  capacity: 8,
+  days: ["Lunes","Martes","Miércoles","Jueves","Viernes"],
+  pauseAfterSlot: "12:00",          // muestra la fila de pausa después de este turno
+  pauseText: "Pausa · 13:00 a 17:00",
+  storageKey: "turnero_mate_v1",
+  fewLeftThreshold: 3               // quedan <= N lugares => "últimos lugares"
+};
+
+/* =========================================================
+   ESTADO + PERSISTENCIA
+========================================================= */
+let db = loadDB();
+let state = {
+  view: "student",          // 'student' | 'admin'
+  weekStart: mondayOf(new Date()),
+  adminUnlocked: false
+};
+
+function defaultDB(){
+  return {
+    version: 1,
+    settings: { teacherName: "NICO ALGEBRAICO", pin: "1234" },
+    bookings: {},   // clave "YYYY-MM-DD|HH" -> [ {id,name,phone,note,code,createdAt} ]
+    blocked: {}     // clave "YYYY-MM-DD|HH" -> motivo string
+  };
+}
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(CONFIG.storageKey);
+    if(!raw) return defaultDB();
+    const d = JSON.parse(raw);
+    if(!d || d.version!==1) return defaultDB();
+    d.settings = Object.assign({teacherName:"NICO ALGEBRAICO",pin:"1234"}, d.settings||{});
+    d.bookings = d.bookings||{}; d.blocked = d.blocked||{};
+    return d;
+  }catch(e){ return defaultDB(); }
+}
+function saveDB(){
+  localStorage.setItem(CONFIG.storageKey, JSON.stringify(db));
+}
+
+/* =========================================================
+   UTILIDADES DE FECHA
+========================================================= */
+function pad(n){ return String(n).padStart(2,"0"); }
+function dateKey(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function slotKey(d,h){ return dateKey(d)+"|"+pad(h); }
+function mondayOf(d){
+  const x = new Date(d); x.setHours(0,0,0,0);
+  const off = (x.getDay()+6)%7;           // lunes=0
+  x.setDate(x.getDate()-off);
+  return x;
+}
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+function weekDates(){
+  return [0,1,2,3,4].map(i=>addDays(state.weekStart,i));
+}
+function slotStart(d,h){ return new Date(d.getFullYear(),d.getMonth(),d.getDate(),h,0,0); }
+function isPast(d,h){ return slotStart(d,h) <= new Date(); }
+function isToday(d){ const t=new Date(); return dateKey(d)===dateKey(t); }
+function fmtShort(d){ return d.getDate()+" "+["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][d.getMonth()]; }
+function fmtLong(d){
+  const days=["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  const mons=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  return days[d.getDay()]+" "+d.getDate()+" de "+mons[d.getMonth()]+" de "+d.getFullYear();
+}
+function fmtHourRange(h){ return pad(h)+":00 – "+pad(h+1)+":00 h"; }
+
+/* =========================================================
+   LÓGICA DE RESERVAS
+========================================================= */
+function getBookings(key){ return db.bookings[key] || []; }
+function isBlocked(key){ return key in db.blocked; }
+function blockReason(key){ return db.blocked[key]; }
+function freeSeats(key){ return Math.max(0, CONFIG.capacity - getBookings(key).length); }
+
+function addBooking(d,h,data){
+  const key = slotKey(d,h);
+  if(isBlocked(key)) return {err:"Este horario está bloqueado."};
+  if(isPast(d,h)) return {err:"No se puede reservar un horario pasado."};
+  if(freeSeats(key)<=0) return {err:"Este turno ya está completo."};
+  const norm = data.name.trim().toLowerCase();
+  if(!norm) return {err:"Ingresá un nombre."};
+  const dup = getBookings(key).some(b=>b.name.trim().toLowerCase()===norm);
+  if(dup) return {err:"Ya existe una reserva con ese nombre en este turno."};
+  const booking = {
+    id: Date.now()+"-"+Math.random().toString(36).slice(2,7),
+    name: data.name.trim(),
+    phone: (data.phone||"").trim(),
+    note: (data.note||"").trim(),
+    code: genCode(),
+    createdAt: new Date().toISOString()
+  };
+  (db.bookings[key] = db.bookings[key]||[]).push(booking);
+  saveDB();
+  return {ok:booking, key};
+}
+function removeBooking(key,bookingId){
+  const arr = db.bookings[key]||[];
+  const idx = arr.findIndex(b=>b.id===bookingId);
+  if(idx<0) return false;
+  arr.splice(idx,1);
+  if(arr.length===0) delete db.bookings[key];
+  saveDB();
+  return true;
+}
+function findBookingByCode(code){
+  const c = code.trim().toUpperCase();
+  if(!c) return null;
+  for(const key of Object.keys(db.bookings)){
+    const b = db.bookings[key].find(x=>x.code===c);
+    if(b) return {key, booking:b};
+  }
+  return null;
+}
+function genCode(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let c;
+  do{
+    c="M-"+"".padEnd(5,0).split("").map(()=>chars[Math.floor(Math.random()*chars.length)]).join("");
+  }while(findBookingByCode(c));
+  return c;
+}
+
+/* =========================================================
+   GOOGLE CALENDAR & ICS HELPERS
+========================================================= */
+function generateGoogleCalendarUrl(date, hour, title, description, location) {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, 0, 0);
+  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour + 1, 0, 0);
+  const fmt = d => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+  const datesStr = `${fmt(start)}/${fmt(end)}`;
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: datesStr,
+    details: description || '',
+    location: location || db.settings.teacherName || 'Clase de Matemática'
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function downloadICS(date, hour, title, description) {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, 0, 0);
+  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour + 1, 0, 0);
+  const fmt = d => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//NICO ALGEBRAICO//Turnero//ES",
+    "BEGIN:VEVENT",
+    `UID:${Date.now()}-nico-algebraico@turnero`,
+    `DTSTAMP:${fmt(new Date())}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${title}`,
+    `DESCRIPTION:${description ? description.replace(/\n/g, '\\n') : ''}`,
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `clase_${dateKey(date)}_${hour}hs.ics`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* =========================================================
+   RENDER PRINCIPAL
+========================================================= */
+const $ = s=>document.querySelector(s);
+const gridEl=$("#grid"), weekLabel=$("#weekLabel"), legendEl=$("#legend");
+const statsEl=$("#stats"), toolsEl=$("#weekTools");
+
+function esc(s){ return String(s??"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+function render(){
+  document.getElementById("brandName").textContent = db.settings.teacherName;
+  document.title = "Turnero · "+db.settings.teacherName;
+
+  // switches de vista
+  const bs=$("#btnViewStudent"), ba=$("#btnViewAdmin");
+  bs.classList.toggle("active", state.view==="student");
+  ba.classList.toggle("active", state.view==="admin");
+  ba.classList.toggle("locked-badge", !state.adminUnlocked);
+
+  const wk = weekDates();
+  weekLabel.textContent =
+    "Semana del "+fmtShort(wk[0])+" al "+fmtShort(wk[4])+" "+wk[4].getFullYear();
+
+  toolsEl.innerHTML = state.view==="admin"
+    ? `<button class="btn ghost sm" onclick="exportCSV()">⬇ CSV</button>
+       <button class="btn ghost sm" onclick="openSettings()">⚙ Configuración</button>`
+    : "";
+
+  renderStats();
+  renderGrid();
+}
+
+function renderStats(){
+  if(state.view!=="admin"){ statsEl.style.display="none"; return; }
+  statsEl.style.display="grid";
+  let total=0, cap=0, busiest={key:null,n:0};
+  weekDates().forEach(d=>{
+    CONFIG.slots.forEach(s=>{
+      const k=slotKey(d,s.h);
+      if(isBlocked(k)) return;
+      const n=getBookings(k).length;
+      total+=n; cap+=CONFIG.capacity;
+      if(n>busiest.n) busiest={key:k,n,d,s};
+    });
+  });
+  const pct = cap? Math.round(total/cap*100):0;
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="v">${total}</div><div class="k">Reservas en la semana</div></div>
+    <div class="stat-card"><div class="v">${pct}%</div><div class="k">Ocupación (cap. ${cap})</div></div>
+    <div class="stat-card"><div class="v">${CONFIG.capacity}</div><div class="k">Alumnos por turno</div></div>
+    <div class="stat-card"><div class="v">${busiest.n? busiest.d.getDate()+" ("+busiest.s.label+")":"—"}</div>
+      <div class="k">Turno más cargado (mié=día u hora)</div></div>`;
+}
+
+function cellStatus(d,h){
+  const key=slotKey(d,h);
+  if(isBlocked(key)) return "blocked";
+  if(state.view==="student" && isPast(d,h)) return "past";
+  const free=freeSeats(key);
+  if(free===0) return "full";
+  if(free<=CONFIG.fewLeftThreshold) return "few";
+  return "open";
+}
+function cellTag(st){
+  return {open:"Reservar",few:"Últimos lugares",full:"Completo",past:"Pasado",blocked:"Bloqueado"}[st];
+}
+
+function renderGrid(){
+  const wk=weekDates();
+  let html=`<div class="g-head corner"></div>`;
+  wk.forEach((d,i)=>{
+    html+=`<div class="g-head ${isToday(d)?"today":""}">${CONFIG.days[i]}<span class="dnum">${d.getDate()}</span></div>`;
+  });
+
+  CONFIG.slots.forEach(slot=>{
+    html+=`<div class="g-time"><div>${slot.label}<small>60 min</small></div></div>`;
+    wk.forEach(d=>{
+      const st=cellStatus(d,slot.h);
+      const key=slotKey(d,slot.h);
+      const occ=getBookings(key).length;
+      const clickable = (state.view==="admin") || (st==="open"||st==="few");
+      const reason = st==="blocked" ? blockReason(key) : "";
+      html+=`<div class="cell s-${st}" ${clickable?`onclick="onCellClick('${key}','${st}')"`:""} title="${esc(reason)}">
+        ${state.view==="admin" && st!=="blocked"
+          ? `<span class="occ">${occ}/${CONFIG.capacity}</span><span class="tag">${occ>=CONFIG.capacity?"Completo":(occ>0?occ+" ocupado"+(occ>1?"s":""):"Libre")}</span>`
+          : `<span class="occ">${occ}/${CONFIG.capacity}</span><span class="tag">${cellTag(st)}</span>`}
+        <div class="seats-bar"><i style="width:${Math.min(100,occ/CONFIG.capacity*100)}%"></i></div>
+      </div>`;
+    });
+    if(slot.label===CONFIG.pauseAfterSlot){
+      html+=`<div class="break-row">⏸ ${CONFIG.pauseText}</div>`;
+    }
+  });
+
+  gridEl.innerHTML=html;
+}
+
+/* =========================================================
+   INTERACCIONES
+========================================================= */
+function onCellClick(key,st){
+  if(state.view==="admin"){
+    // admin puede abrir cualquier celda (bloqueada o con reservas) para gestionar
+    openAdminSlot(key);
+    return;
+  }
+  if(st==="open"||st==="few"){ openBookingModal(key); }
+}
+
+/* ---------- Modal genérico ---------- */
+const overlay=$("#overlay"), modal=$("#modal");
+function openModal(html){ modal.innerHTML=html; overlay.classList.add("show"); }
+function closeModal(){ overlay.classList.remove("show"); modal.innerHTML=""; }
+overlay.addEventListener("click",e=>{ if(e.target===overlay) closeModal(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2600);
+}
+
+/* ---------- Reserva (vista alumno) ---------- */
+function keyToDate(key){
+  const [d,h]=key.split("|");
+  const [y,m,day]=d.split("-").map(Number);
+  return {date:new Date(y,m-1,day), hour:Number(h)};
+}
+function openBookingModal(key){
+  const {date,hour}=keyToDate(key);
+  const free=freeSeats(key);
+  openModal(`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>Reservar clase</h2>
+    <p class="sub">${fmtLong(date)} · <b>${fmtHourRange(hour)}</b> · quedan ${free} de ${CONFIG.capacity} lugares</p>
+    <div class="field">
+      <label>Nombre y apellido *</label>
+      <input type="text" id="bkName" maxlength="60" placeholder="Ej: Ana García">
+    </div>
+    <div class="field">
+      <label>Teléfono (opcional)</label>
+      <input type="tel" id="bkPhone" maxlength="30" placeholder="Ej: 11 5555-5555">
+    </div>
+    <div class="field">
+      <label>Tema / consulta (opcional)</label>
+      <input type="text" id="bkNote" maxlength="120" placeholder="Ej: ecuaciones, derivadas…">
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn primary" onclick="submitBooking('${key}')">Confirmar reserva</button>
+    </div>
+    <div class="hint-box">Al confirmar vas a recibir un <b>código de reserva</b>. Guardalo: lo necesitás para cancelar tu turno.</div>
+  `);
+  setTimeout(()=>document.getElementById("bkName")?.focus(),60);
+}
+function submitBooking(key){
+  const {date,hour}=keyToDate(key);
+  const name=$("#bkName").value, phone=$("#bkPhone").value, note=$("#bkNote").value;
+  if(!name.trim()){ toast("Ingresá un nombre."); return; }
+  const res=addBooking(date,hour,{name,phone,note});
+  if(res.err){ toast(res.err); render(); closeModal(); return; }
+  const gcalUrl = generateGoogleCalendarUrl(date, hour, `Clase con ${db.settings.teacherName}`, `Reserva de turno.\nCódigo: ${res.ok.code}\nAlumno: ${res.ok.name}`);
+  openModal(`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>¡Turno confirmado! ✅</h2>
+    <p class="sub">${fmtLong(date)} · <b>${fmtHourRange(hour)}</b><br>Reserva a nombre de <b>${esc(res.ok.name)}</b></p>
+    <div class="bigint">${res.ok.code}</div>
+    <p class="sub" style="text-align:center">Tu código de reserva. Anotalo o sacale una captura.</p>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap">
+      <a href="${gcalUrl}" target="_blank" class="btn ghost sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">📅 Agregar a Google Calendar</a>
+      <button class="btn ghost sm" onclick='downloadICS(new Date(${date.getFullYear()},${date.getMonth()},${date.getDate()}),${hour},"Clase con ${esc(db.settings.teacherName)}","Código: ${res.ok.code}")'>💾 Descargar .ics</button>
+    </div>
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn primary" onclick="closeModal(); render();">Listo</button>
+    </div>
+  `);
+}
+
+/* ---------- Buscar / cancelar por código (vista alumno) ---------- */
+function openFindModal(){
+  openModal(`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>Mi reserva</h2>
+    <p class="sub">Ingresá tu código para ver o cancelar tu turno.</p>
+    <div class="field">
+      <label>Código de reserva</label>
+      <input type="text" id="findCode" maxlength="10" placeholder="Ej: M-8K2QZ" style="text-transform:uppercase"
+        onkeydown="if(event.key==='Enter')findReservation()">
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Cerrar</button>
+      <button class="btn primary" onclick="findReservation()">Buscar</button>
+    </div>
+  `);
+  setTimeout(()=>document.getElementById("findCode")?.focus(),60);
+}
+function findReservation(){
+  const code=$("#findCode").value.trim().toUpperCase();
+  const found=findBookingByCode(code);
+  if(!found){ toast("No encontramos una reserva con ese código."); return; }
+  const {date,hour}=keyToDate(found.key);
+  const past=isPast(date,hour);
+  openModal(`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>Tu reserva</h2>
+    <p class="sub">
+      <b>${esc(found.booking.name)}</b>${found.booking.phone?" · "+esc(found.booking.phone):""}<br>
+      ${fmtLong(date)} · <b>${fmtHourRange(hour)}</b>
+      ${found.booking.note?"<br>Tema: "+esc(found.booking.note):""}
+    </p>
+    <div class="bigint">${found.booking.code}</div>
+    ${past
+      ? `<div class="hint-box">Este turno ya pasó, no se puede cancelar.</div>`
+      : `<div class="modal-actions">
+          <button class="btn ghost" onclick="closeModal()">Cerrar</button>
+          <button class="btn danger" onclick="cancelByCode('${found.key}','${found.booking.id}')">Cancelar turno</button>
+        </div>`}
+  `);
+}
+function cancelByCode(key,bookingId){
+  const {date,hour}=keyToDate(key);
+  if(isPast(date,hour)){ toast("No se puede cancelar un turno pasado."); return; }
+  if(removeBooking(key,bookingId)){
+    toast("Turno cancelado. ¡Lugar liberado!");
+    closeModal(); render();
+  }
+}
+
+/* ---------- Admin: login con PIN ---------- */
+function openAdminLogin(){
+  openModal(`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>Panel del profesor 🔒</h2>
+    <p class="sub">Ingresá el PIN para administrar los turnos.<br><small>(PIN por defecto: <b>1234</b>)</small></p>
+    <div class="field">
+      <label>PIN</label>
+      <input type="password" id="pinInput" inputmode="numeric" maxlength="12"
+        onkeydown="if(event.key==='Enter')tryLogin()">
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn primary" onclick="tryLogin()">Ingresar</button>
+    </div>
+  `);
+  setTimeout(()=>document.getElementById("pinInput")?.focus(),60);
+}
+function tryLogin(){
+  if($("#pinInput").value === db.settings.pin){
+    state.adminUnlocked=true; state.view="admin";
+    closeModal(); render(); toast("Bienvenido al panel docente.");
+  }else{
+    toast("PIN incorrecto.");
+    $("#pinInput").value=""; $("#pinInput").focus();
+  }
+}
+function logoutAdmin(){
+  state.adminUnlocked=false; state.view="student"; render(); toast("Saliste del panel.");
+}
+
+/* ---------- Admin: gestión de un turno ---------- */
+function openAdminSlot(key){
+  const {date,hour}=keyToDate(key);
+  const blocked=isBlocked(key);
+  const list=getBookings(key);
+  let seatsHtml="";
+  for(let i=0;i<CONFIG.capacity;i++){
+    const b=list[i];
+    if(b){
+      seatsHtml+=`<li>
+        <div class="seat-num">${i+1}</div>
+        <div class="who"><b>${esc(b.name)}</b>
+          <small>${b.phone?esc(b.phone)+" · ":""}código ${b.code}${b.note?" · "+esc(b.note):""}</small></div>
+        ${isPast(date,hour)?"":`<button class="btn danger sm" onclick="adminRemove('${key}','${b.id}')">Quitar</button>`}
+      </li>`;
+    }else{
+      seatsHtml+=`<li class="empty">Asiento ${i+1} · libre</li>`;
+    }
+  }
+  const teacherTitle = `Clase ${db.settings.teacherName} (${list.length}/${CONFIG.capacity} alumnos)`;
+  const teacherDesc = list.map((b, i) => `${i+1}. ${b.name} (${b.phone || 'sin tel'}) [Cód: ${b.code}] ${b.note ? '- ' + b.note : ''}`).join('\n');
+  const gcalTeacherUrl = generateGoogleCalendarUrl(date, hour, teacherTitle, teacherDesc);
+
+  openModal(`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>${fmtLong(date)} · ${fmtHourRange(hour)}</h2>
+    <p class="sub">${list.length}/${CONFIG.capacity} lugares ocupados ${blocked?"· <b style='color:var(--full)'>BLOQUEADO</b>":""}</p>
+    <ul class="seat-list">${seatsHtml}</ul>
+    <div style="margin:10px 0 14px 0;display:flex;gap:8px;flex-wrap:wrap">
+      <a href="${gcalTeacherUrl}" target="_blank" class="btn ghost sm" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">📅 Agregar a Google Calendar</a>
+      <button class="btn ghost sm" onclick="downloadICS(new Date(${date.getFullYear()},${date.getMonth()},${date.getDate()}),${hour},'${esc(teacherTitle)}','${esc(teacherDesc).replace(/\n/g, '\\n')}')">💾 Descargar .ics</button>
+    </div>
+    ${blocked? `
+      <div class="hint-box">Motivo de bloqueo: <b>${esc(blockReason(key)||"—")}</b></div>
+      <div class="modal-actions" style="justify-content:space-between">
+        <button class="btn ghost" onclick="closeModal()">Cerrar</button>
+        <button class="btn primary" onclick="toggleBlock('${key}',false)">🔓 Desbloquear turno</button>
+      </div>`
+    : `
+      <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+        <label style="font-size:12.5px;font-weight:600">Agregar alumno manualmente</label>
+        <div class="field"><input type="text" id="adName" maxlength="60" placeholder="Nombre y apellido"
+          ${isPast(date,hour)?'disabled style="background:#f3f4f6"':""}
+          onkeydown="if(event.key==='Enter')adminAdd('${key}')"></div>
+        <div class="field"><input type="tel" id="adPhone" maxlength="30" placeholder="Teléfono (opcional)" ${isPast(date,hour)?'disabled style="background:#f3f4f6"':""}></div>
+      </div>
+      <div class="field">
+        <input type="text" id="adBlockReason" maxlength="80" placeholder="Motivo de bloqueo (opcional)">
+      </div>
+      <div class="modal-actions" style="justify-content:space-between">
+        <button class="btn ghost" onclick="toggleBlock('${key}',true)">🔒 Bloquear turno</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn ghost" onclick="closeModal()">Cerrar</button>
+          ${isPast(date,hour)||freeSeats(key)<=0?"":`<button class="btn primary" onclick="adminAdd('${key}')">+ Agregar</button>`}
+        </div>
+      </div>`}
+  `);
+}
+function adminAdd(key){
+  const name=$("#adName")?.value.trim(), phone=$("#adPhone")?.value.trim();
+  if(!name){ toast("Ingresá un nombre."); return; }
+  const {date,hour}=keyToDate(key);
+  const res=addBooking(date,hour,{name,phone,note:"(cargado por el profesor)"});
+  if(res.err){ toast(res.err); return; }
+  toast("Alumno agregado. Código: "+res.ok.code);
+  openAdminSlot(key); render();
+}
+function adminRemove(key,bookingId){
+  if(removeBooking(key,bookingId)){ toast("Reserva eliminada."); openAdminSlot(key); render(); }
+}
+function toggleBlock(key,block){
+  if(block){
+    const reason=$("#adBlockReason")?.value.trim()||"";
+    const n=getBookings(key).length;
+    if(n>0 && !confirm(`Hay ${n} reserva(s) en este turno. ¿Bloquear igual? (las reservas se conservan)`)) return;
+    db.blocked[key]=reason||"Bloqueado por el profesor";
+    saveDB(); toast("Turno bloqueado.");
+  }else{
+    delete db.blocked[key]; saveDB(); toast("Turno desbloqueado.");
+  }
+  openAdminSlot(key); render();
+}
+
+/* ---------- Admin: configuración ---------- */
+function openSettings(){
+  openModal(`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2>Configuración</h2>
+    <p class="sub">Datos del panel del profesor.</p>
+    <div class="field">
+      <label>Nombre del profesor / academia</label>
+      <input type="text" id="cfgName" maxlength="60" value="${esc(db.settings.teacherName)}">
+    </div>
+    <div class="field">
+      <label>Cambiar PIN (dejar vacío para mantener el actual)</label>
+      <input type="password" id="cfgPin" inputmode="numeric" maxlength="12" placeholder="Nuevo PIN">
+    </div>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn ghost" onclick="logoutAdmin();closeModal()">Cerrar sesión</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn primary" onclick="saveSettings()">Guardar</button>
+      </div>
+    </div>
+  `);
+}
+function saveSettings(){
+  const name=$("#cfgName").value.trim();
+  const pin=$("#cfgPin").value.trim();
+  if(name) db.settings.teacherName=name;
+  if(pin){
+    if(!/^\d{4,12}$/.test(pin)){ toast("El PIN debe tener entre 4 y 12 dígitos."); return; }
+    db.settings.pin=pin;
+  }
+  saveDB(); toast("Configuración guardada."); closeModal(); render();
+}
+
+/* ---------- Admin: exportar CSV de la semana ---------- */
+function exportCSV(){
+  let rows=[["Fecha","Día","Hora","Asiento","Nombre","Teléfono","Código","Tema","Estado"]];
+  weekDates().forEach((d,i)=>{
+    CONFIG.slots.forEach(s=>{
+      const key=slotKey(d,s.h);
+      const list=getBookings(key);
+      if(list.length===0 && !isBlocked(key)) return;
+      if(isBlocked(key)) rows.push([dateKey(d),CONFIG.days[i],s.label,"—","—","—","—","—","BLOQUEADO: "+(blockReason(key)||"")]);
+      list.forEach((b,j)=>{
+        rows.push([dateKey(d),CONFIG.days[i],s.label,String(j+1),b.name,b.phone||"",b.code,b.note||"","Reservado"]);
+      });
+    });
+  });
+  if(rows.length===1){ toast("No hay reservas en esta semana para exportar."); return; }
+  const csv="\uFEFF"+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(";")).join("\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="turnos_semana_"+dateKey(state.weekStart)+".csv";
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("CSV descargado.");
+}
+
+/* =========================================================
+   NAVEGACIÓN Y VISTAS
+========================================================= */
+let renderNavFns={};
+function setupNav(){
+  $("#btnPrev").onclick=()=>{ state.weekStart=addDays(state.weekStart,-7); render(); };
+  $("#btnNext").onclick=()=>{ state.weekStart=addDays(state.weekStart,7); render(); };
+  $("#btnToday").onclick=()=>{ state.weekStart=mondayOf(new Date()); render(); };
+
+  $("#btnViewStudent").onclick=()=>{ state.view="student"; render(); };
+  $("#btnViewAdmin").onclick=()=>{
+    if(state.adminUnlocked){ state.view="admin"; render(); }
+    else openAdminLogin();
+  };
+
+  // botón contextual según vista
+  const observer=new MutationObserver(()=>{
+    if(state.view==="student" && !document.getElementById("btnMyRes")){
+      const b=document.createElement("button");
+      b.className="btn ghost sm"; b.id="btnMyRes";
+      b.innerHTML="🔎 Mi reserva (por código)";
+      b.onclick=openFindModal;
+      toolsEl.appendChild(b);
+    }
+  });
+  observer.observe(toolsEl,{childList:true});
+}
+
+/* toolbar extra para vista alumno: luego del render principal lo agregamos */
+const _origRender=render;
+render=function(){
+  _origRender();
+  if(state.view==="student"){
+    toolsEl.innerHTML=`<button class="btn ghost sm" onclick="openFindModal()">🔎 Mi reserva (por código)</button>`;
+    // no navegar al pasado en vista alumno
+    const currentMonday=mondayOf(new Date());
+    $("#btnPrev").disabled = state.weekStart <= currentMonday;
+  }else{
+    $("#btnPrev").disabled=false;
+  }
+};
+
+setupNav();
+render();
+
+// refresco automático si pasó un minuto (para que los turnos pasados se marquen solos)
+setInterval(()=>render(),60000);
+</script>
+</body>
+</html>

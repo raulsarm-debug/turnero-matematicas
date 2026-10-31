@@ -873,18 +873,6 @@ function setupNav(){
     if(state.adminUnlocked){ state.view="admin"; render(); }
     else openAdminLogin();
   };
-
-  // botón contextual según vista
-  const observer=new MutationObserver(()=>{
-    if(state.view==="student" && !document.getElementById("btnMyRes")){
-      const b=document.createElement("button");
-      b.className="btn ghost sm"; b.id="btnMyRes";
-      b.innerHTML="🔎 Mi reserva (por código)";
-      b.onclick=openFindModal;
-      toolsEl.appendChild(b);
-    }
-  });
-  observer.observe(toolsEl,{childList:true});
 }
 
 /* toolbar extra para vista alumno: luego del render principal lo agregamos */
@@ -892,7 +880,7 @@ const _origRender=render;
 render=function(){
   _origRender();
   if(state.view==="student"){
-    toolsEl.innerHTML=`<button class="btn ghost sm" onclick="openFindModal()">🔎 Mi reserva (por código)</button>`;
+    toolsEl.innerHTML=`<button class="btn ghost sm" id="btnMyRes" onclick="openFindModal()">🔎 Mi reserva (por código)</button>`;
     // no navegar al pasado en vista alumno
     const currentMonday=mondayOf(new Date());
     $("#btnPrev").disabled = state.weekStart <= currentMonday;

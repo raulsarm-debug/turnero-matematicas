@@ -13,7 +13,7 @@ Aplicación de turnos estilo **Fresha** para un profesor de matemáticas.
 
 ## Cómo usar
 
-1. **Abrir la aplicación**: Arrastra `turnero-matematicas.html` al navegador, haz doble clic en él, o abre desde el menú *Archivo > Abrir* del navegador.
+1. **Abrir la aplicación**: Arrastra `index.html` al navegador, haz doble clic en él, o abre desde el menú *Archivo > Abrir* del navegador.
 2. **Como alumno**: elige un casillero abierto, ingresá tu nombre y confirmá. Te dará un **código** (ej. `M-8K2QZ`). Guardalo: lo necesitás para ver o cancelar tu reserva.
 3. **Como profesor**: pulsá el botón `👨‍🏫 Panel del profesor` e ingresá el PIN (por defecto `1234`). Allí podés:
     - **+B Agregar** un alumno manualmente.
@@ -24,7 +24,7 @@ Aplicación de turnos estilo **Fresha** para un profesor de matemáticas.
 
 **Nota rápida:** Para abrir directamente, copiá esta ruta en la barra de direcciones del navegador (se usa el formato file:// según el sistema operativo):
 ```
-file:///Users/raulsarmiento/Downloads/turnero-matematicas/turnero-matematicas.html
+file:///Users/raulsarmiento/Downloads/turnero-matematicas/index.html
 ```
 
 ## Configuración del horario
@@ -41,3 +41,19 @@ Editá la constante `CONFIG` en el archivo HTML para cambiar:
 - Los datos se guardan en `localStorage` de tu navegador; si lo limpias o usás otro navegador, se pierden las reservas.
 - No hay conexión a internet ni servidores: el archivo es 100% autónomo.
 - Para usarlo en otros dispositivos (teléfono, tablet) necesitarías un tiny server o un storage compartido; pedí que lo agregue si lo necesitás.
+
+## Publicar en Render (gratis, sin tarjeta)
+
+1. Entrá a [render.com](https://render.com) y registrate con GitHub.
+2. **New + → Static Site**.
+3. Elegí este repositorio (`turnero-matematicas`).
+4. En **Branch**, elegí `main` (o `render-deploy` si todavía no se fusionó).
+5. **Build Command**: dejalo vacío.
+6. **Publish Directory**: `.` (un punto).
+7. **Create Static Site** y esperá ~1 minuto.
+
+Render te da un link tipo `https://turnero-matematicas.onrender.com`.
+
+> ⚠️ **Importante:** este turnero guarda las reservas en el `localStorage` de cada navegador.
+> Publicado en internet, **cada visitante ve su propia copia** y las reservas no se comparten.
+> Para un turnero real hace falta un backend con base de datos compartida.
